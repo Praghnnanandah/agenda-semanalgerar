@@ -117,12 +117,14 @@ function abrirAgenda(nome) {
     agendaDiv.style.display = "block";
     document.querySelector(".salvar-fixo").style.display = "block";
 
-    agendaDiv.innerHTML = `<button class="voltar" onclick="voltar()">⬅ Voltar</button>
-    <h2>${nome}</h2>`;
+    agendaDiv.innerHTML = `
+    <button class="voltar" onclick="voltar()">⬅ Voltar</button>
+    <h2>${nome}</h2>
+    `;
 
     const horas = pessoas[nome];
 
-    for (let mes = 2; mes < 12; mes++) {
+    for (let mes = 0; mes < 12; mes++) {
 
         let nomeMes = new Date(2026, mes, 1)
             .toLocaleString('pt-br', { month: 'long' });
@@ -130,7 +132,6 @@ function abrirAgenda(nome) {
         agendaDiv.innerHTML += `<h3>${nomeMes.toUpperCase()} 2026</h3>`;
 
         let data = new Date(2026, mes, 1);
-        let semanaIndex = 0;
 
         while (data.getMonth() === mes) {
 
@@ -163,7 +164,7 @@ function abrirAgenda(nome) {
             horas.forEach(hora => {
                 tabela += `<tr>
                     <td class="hora">${hora}</td>
-                    ${datasSemana.map((d, i) => {
+                    ${datasSemana.map((d) => {
                         if (!d) return "<td></td>";
 
                         const id = `${nome}_${mes}_${d.dia}_${hora}`;
@@ -174,8 +175,6 @@ function abrirAgenda(nome) {
 
             tabela += `</table><br>`;
             agendaDiv.innerHTML += tabela;
-
-            semanaIndex++;
         }
     }
 
