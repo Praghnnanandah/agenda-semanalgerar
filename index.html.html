@@ -2,206 +2,100 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Agenda Semanal Gerar</title>
+<title>Agenda Semanal</title>
 
 <style>
 body {
     font-family: Arial;
     background: #121212;
     color: white;
-    padding: 20px;
     text-align: center;
 }
 
-.menu button {
-    display: block;
-    width: 250px;
-    margin: 10px auto;
-    padding: 15px;
-    background: #00bfff;
-    border: none;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 8px;
-}
-
-.voltar {
-    margin-bottom: 20px;
+button {
     padding: 10px;
-    background: #444;
-    border: none;
-    color: white;
+    margin: 10px;
     cursor: pointer;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background: #1e1e1e;
+    margin-top: 20px;
 }
 
-th, td {
-    border: 1px solid #333;
+td, th {
+    border: 1px solid #444;
     padding: 5px;
-}
-
-th {
-    background: #333;
-}
-
-.hora {
-    background: #222;
-    width: 70px;
 }
 
 textarea {
     width: 100%;
-    min-height: 80px;
-    background: #2a2a2a;
+    height: 60px;
+    background: #222;
     color: white;
     border: none;
-    resize: vertical;
-    padding: 5px;
-}
-
-.salvar-fixo {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #00bfff;
-    border: none;
-    padding: 15px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    display: none;
 }
 </style>
 </head>
 
 <body>
 
-<h1>📅 Agenda Semanal Gerar</h1>
+<h1>📅 Agenda</h1>
 
-<div id="menu" class="menu"></div>
+<div id="menu"></div>
 <div id="agenda" style="display:none;"></div>
 
-<button class="salvar-fixo" onclick="salvar()">💾</button>
-
 <script>
-const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-
-const pessoas = {
-    "Israel": ["08:00","09:00","10:00","11:00","12:00"],
-    "Edygar": ["08:00","09:00","10:00","11:00","12:00"],
-    "Matheus": ["13:30","14:30","15:30","16:30","17:30"],
-    "Jhonathan": ["13:30","14:30","15:30","16:30","17:30"],
-    "Calleb": ["13:30","14:30","15:30","16:30","17:30"]
-};
+const pessoas = ["Israel","Edygar","Matheus","Jhonathan","Calleb"];
+const horas = ["08:00","09:00","10:00","11:00","12:00"];
 
 const menu = document.getElementById("menu");
-const agendaDiv = document.getElementById("agenda");
+const agenda = document.getElementById("agenda");
 
-// MENU
-Object.keys(pessoas).forEach(nome => {
+// criar botões
+pessoas.forEach(nome => {
     let btn = document.createElement("button");
     btn.innerText = nome;
-    btn.onclick = () => abrirAgenda(nome);
+    btn.onclick = () => abrir(nome);
     menu.appendChild(btn);
 });
 
-// ABRIR AGENDA
-function abrirAgenda(nome) {
+function abrir(nome){
     menu.style.display = "none";
-    agendaDiv.style.display = "block";
-    document.querySelector(".salvar-fixo").style.display = "block";
+    agenda.style.display = "block";
 
-    agendaDiv.innerHTML = `
-    <button class="voltar" onclick="voltar()">⬅ Voltar</button>
-    <h2>${nome}</h2>
-    `;
+    let html = `<button onclick="voltar()">Voltar</button>`;
+    html += `<h2>${nome}</h2>`;
 
-    const horas = pessoas[nome];
+    html += `<table>`;
+    html += `<tr><th>Hora</th><th>Anotação</th></tr>`;
 
-    for (let mes = 0; mes < 12; mes++) {
+    horas.forEach(hora => {
+        const id = `${nome}_${hora}`;
+        html += `<tr>
+            <td>${hora}</td>
+            <td><textarea id="${id}" oninput="salvar(this)"></textarea></td>
+        </tr>`;
+    });
 
-        let nomeMes = new Date(2026, mes, 1)
-            .toLocaleString('pt-br', { month: 'long' });
+    html += `</table>`;
 
-        agendaDiv.innerHTML += `<h3>${nomeMes.toUpperCase()} 2026</h3>`;
-
-        let data = new Date(2026, mes, 1);
-
-        while (data.getMonth() === mes) {
-
-            let datasSemana = [];
-
-            for (let d = 0; d < 7; d++) {
-
-                if (data.getMonth() !== mes) {
-                    datasSemana.push(null);
-                } else {
-                    let dia = data.getDate();
-                    let diaTexto = diasSemana[data.getDay()];
-                    let mesNumero = String(data.getMonth()+1).padStart(2, '0');
-
-                    datasSemana.push({
-                        texto: `${diaTexto}<br>${String(dia).padStart(2,'0')}/${mesNumero}`,
-                        dia: dia
-                    });
-
-                    data.setDate(data.getDate() + 1);
-                }
-            }
-
-            let tabela = `<table>
-            <tr>
-                <th>Hora</th>
-                ${datasSemana.map(d => `<th>${d ? d.texto : ""}</th>`).join("")}
-            </tr>`;
-
-            horas.forEach(hora => {
-                tabela += `<tr>
-                    <td class="hora">${hora}</td>
-                    ${datasSemana.map((d) => {
-                        if (!d) return "<td></td>";
-
-                        const id = `${nome}_${mes}_${d.dia}_${hora}`;
-                        return `<td><textarea id="${id}" oninput="salvarAuto(this)"></textarea></td>`;
-                    }).join("")}
-                </tr>`;
-            });
-
-            tabela += `</table><br>`;
-            agendaDiv.innerHTML += tabela;
-        }
-    }
+    agenda.innerHTML = html;
 
     carregar();
 }
 
-// VOLTAR
-function voltar() {
-    agendaDiv.style.display = "none";
+function voltar(){
+    agenda.style.display = "none";
     menu.style.display = "block";
-    document.querySelector(".salvar-fixo").style.display = "none";
 }
 
-// SALVAR
-function salvarAuto(campo) {
+function salvar(campo){
     localStorage.setItem(campo.id, campo.value);
 }
 
-function salvar() {
-    document.querySelectorAll("textarea").forEach(campo => {
-        localStorage.setItem(campo.id, campo.value);
-    });
-    alert("Salvo com sucesso!");
-}
-
-// CARREGAR
-function carregar() {
+function carregar(){
     document.querySelectorAll("textarea").forEach(campo => {
         campo.value = localStorage.getItem(campo.id) || "";
     });
